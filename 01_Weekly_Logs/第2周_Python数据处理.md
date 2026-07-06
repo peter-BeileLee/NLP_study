@@ -191,3 +191,122 @@ plt.title('VIP Level Distribution of Active Users')
 plt.show()
 
 ```
+## 实例实战
+### 🏢 案例一：房价数据分析（NumPy + Pandas 联动）
+> 场景： 拿到了一个房地产的原始表格，我们需要清洗数据、提取特征，并将其转化为机器学习算法直接可用的 NumPy 矩阵。
+
+```Python
+import pandas as pd
+import numpy as np
+
+# 1. 模拟创建原始的房地产 DataFrame 数据（模拟从 CSV 读入）
+raw_data = {
+    'neighborhood': ['Chaoyang', 'Haidian', 'Chaoyang', 'Xicheng', 'Haidian'],
+    'rooms': [3, 2, np.nan, 4, 3], # 包含一个缺失值 NaN
+    'area_sqm': [120, 85, 90, 150, 110],
+    'price_myr': [8.5, 7.2, 5.8, 12.0, 9.1]
+}
+df = pd.DataFrame(raw_data)
+print("--- 原始数据 ---")
+print(df)
+
+# 2. 用 Pandas 清洗数据：用房间数的“中位数”填充缺失值
+room_median = df['rooms'].median()
+df['rooms'] = df['rooms'].fillna(room_median)
+
+# 3. 特征工程：用 Pandas 计算一个新特征“每平米单价”
+df['price_per_sqm'] = df['price_myr'] / df['area_sqm']
+
+print("\n--- 清洗与特征工程后的数据 ---")
+print(df)
+
+# 4. 底层转换：将 Pandas 的数值列彻底转换为 NumPy 矩阵，准备喂给机器学习模型
+# 我们只提取 rooms, area_sqm, price_per_sqm 作为特征矩阵 X
+X = df[['rooms', 'area_sqm', 'price_per_sqm']].to_numpy()
+
+print("\n--- 最终喂给模型的 NumPy 矩阵 (X) ---")
+print(X)
+print(f"矩阵形状 (Shape): {X.shape}") # 输出 (5, 3)，代表 5 个样本，每个样本 3 个特征
+
+```
+### 📈 案例二：股票/销售趋势分析与预测线展示（Matplotlib + NumPy）
+> 场景： 我们有一组连续的销售数据，我们想用 NumPy 拟合出一条趋势线（基础回归），并用 Matplotlib 把它清晰地画出来。
+
+```Python
+import numpy as np
+import matplotlib.pyplot as plt
+
+# 1. 用 NumPy 生成模拟的销售时间数据（第 1 天到第 10 天）
+days = np.arange(1, 11)
+
+# 2. 模拟实际销售额（带有一些随机波动/噪声）
+# 真实规律大概是：销售额 = 天数 * 1.5 + 5
+np.random.seed(42) # 固定随机种子，确保你运行的结果和我一样
+noise = np.random.normal(0, 1, size=len(days)) # 生成随机噪声
+actual_sales = days * 1.5 + 5 + noise
+
+# 3. 用 NumPy 的多项式拟合函数（polyfit）计算出趋势线的斜率和截距（底层最小二乘法算法）
+slope, intercept = np.polyfit(days, actual_sales, 1)
+trend_line = slope * days + intercept # 算出趋势线上的点
+
+# 4. 用 Matplotlib 绘图呈现
+plt.figure(figsize=(8, 5))
+
+# 画出实际销售额的“散点图”
+plt.scatter(days, actual_sales, color='blue', label='Actual Sales', s=100)
+# 画出拟合的“趋势折线图”
+plt.plot(days, trend_line, color='red', linestyle='--', linewidth=2, label='Trend Line')
+
+# 美化图表
+plt.title('Sales Trend Analysis', fontsize=14)
+plt.xlabel('Days', fontsize=12)
+plt.ylabel('Sales (K)', fontsize=12)
+plt.grid(True, linestyle=':', alpha=0.6) # 显示网格线
+plt.legend() # 显示右上角的标签图例
+
+# 渲染出来
+plt.show()
+```
+### 📝 案例三：用户评论文本长度与情感分布（三剑客终极合体）
+> 场景： 这是一个标准的 NLP 情感分析（Classification）的前置看板。我们要读取评论数据，统计文本长度，看看不同情感分类下的用户，说话的长短有什么规律。
+
+```Python
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# 1. 模拟读入一份社交媒体评论数据集
+data = {
+    'review': [
+        'This product is amazing! Highly recommend it to everyone.',
+        'Total waste of money, broke on the first day.',
+        'It is okay, nothing special but works fine.',
+        'Worst customer service ever! Extremely disappointed.',
+        'Love it! Best purchase of the year.'
+    ],
+    'sentiment': ['Positive', 'Negative', 'Neutral', 'Negative', 'Positive']
+}
+df = pd.DataFrame(data)
+
+# 2. 【Pandas 操作】类别分布统计：看正负面评论各有多少
+print("--- 情感标签分布统计 ---")
+print(df['sentiment'].value_counts())
+
+# 3. 【Pandas + NumPy 操作】文本长度统计：新建一列长度特征
+df['review_length'] = df['review'].str.len()
+
+# 4. 【Pandas Groupby】分组统计：看看正面和负面评论，哪类人骂得更长/夸得更长？
+avg_length = df.groupby('sentiment')['review_length'].mean()
+print("\n--- 各类情感的平均评论字数 ---")
+print(avg_length)
+
+# 5. 【Matplotlib 操作】一键可视化对比
+plt.figure(figsize=(6, 4))
+# 画柱状图展示不同情感的平均评论长度
+plt.bar(avg_length.index, avg_length.values, color=['red', 'gray', 'green'], alpha=0.8)
+
+plt.title('Average Review Length by Sentiment')
+plt.xlabel('Sentiment')
+plt.ylabel('Average Number of Characters')
+plt.show()
+```
