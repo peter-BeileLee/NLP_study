@@ -58,3 +58,6 @@ print("特征总数 (包含N-gram):\n", len(feature_names))
 print("\n部分特征示例:\n", feature_names)
 
 print("\n每个文本的 TF-IDF 详细数值表：\n",df_tfidf)
+# tf:一个词在当前这句话里出现的频率。
+# idf:一个词在整个语料库（所有文章）中的稀有程度。
+# tf-idf:“综合考虑后，这个调料到底是不是这道菜的‘灵魂招牌’？”
